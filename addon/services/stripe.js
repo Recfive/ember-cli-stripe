@@ -71,7 +71,7 @@ var Stripe = Ember.Service.extend(Ember.Evented, StripeConfig, {
 
   getStripeOptions: function() {
     const stripeConfigKeys = this.get('stripeConfigOptions');
-    var options = Ember.Object.create(this.getProperties(stripeConfigKeys));
+    var options = this.getProperties(stripeConfigKeys);
 
     if (this.get('target')) {
       const componentOptions = this.get('target').getProperties(stripeConfigKeys);
@@ -79,7 +79,7 @@ var Stripe = Ember.Service.extend(Ember.Evented, StripeConfig, {
         const optionValue = componentOptions[key];
         const value = this.getOptionOrDefault(key, optionValue);
 
-        options.set(key, value);
+        options[key] = value;
       }
     }
 
