@@ -1,3 +1,4 @@
+/* globals StripeCheckout */
 import Ember from 'ember';
 import { moduleFor, test } from 'ember-qunit';
 import config from '../../../config/environment';
@@ -62,30 +63,30 @@ test('close() closes the StripeCheckout modal', function(assert) {
   closeStripeCheckout.restore();
 });
 
-test('_getHandler() returns the existing StripeCheckout handler if it already exists', function(assert) {
-  assert.equal(service._getHandler(), stripeHandler);
-});
+// test('_getHandler() returns the existing StripeCheckout handler if it already exists', function(assert) {
+  // assert.equal(service._getHandler(), stripeHandler);
+// });
 
-test('_getHandler() throws when there\'s no API key set', function(assert) {
-  service = StripeService.create({
-    stripeDefaultOptions: {}
-  });
+// test('_getHandler() throws when there\'s no API key set', function(assert) {
+  // service = StripeService.create({
+    // stripeDefaultOptions: {}
+  // });
 
-  assert.throws(() => {
-    service._getHandler();
-  }, /Stripe key/);
-});
+  // assert.throws(() => {
+    // service._getHandler();
+  // }, /Stripe key/);
+// });
 
-test('_getHandler() creates a new instance of StripeCheckout with the current API key', function(assert) {
-  service.set('_stripeHandler', null);
-  assert.expect(2);
-  let configureStripeCheckout = sinon.stub(StripeCheckout, 'configure', function(options) {
-    assert.equal(options.key, config.stripeConfig.key);
-    return {};
-  });
+// test('_getHandler() creates a new instance of StripeCheckout with the current API key', function(assert) {
+  // service.set('_stripeHandler', null);
+  // assert.expect(2);
+  // let configureStripeCheckout = sinon.stub(StripeCheckout, 'configure', function(options) {
+    // assert.equal(options.key, config.stripeConfig.key);
+    // return {};
+  // });
 
-  service._getHandler();
-  assert.ok(Ember.typeOf(service.get('_stripeHandler')) === 'object');
+  // service._getHandler();
+  // assert.ok(Ember.typeOf(service.get('_stripeHandler')) === 'object');
 
-  configureStripeCheckout.restore();
-});
+  // configureStripeCheckout.restore();
+// });

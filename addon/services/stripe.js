@@ -14,12 +14,12 @@ const {
   RSVP
 } = Ember;
 
-let stripeScriptLoaded;
+let stripeScriptPromise;
 
 const Stripe = Service.extend({
 
   /**
-   * If the true, the Stripe checkout modal is currently opened.
+   * If true, the Stripe checkout modal is currently opened.
    */
   isOpened: false,
 
@@ -52,7 +52,7 @@ const Stripe = Service.extend({
   },
 
   /*
-   * Registers a component as the current target of this service
+   * Registers a component as the current target of this service.
    * @public
    */
   registerComponent(component) {
@@ -60,7 +60,7 @@ const Stripe = Service.extend({
   },
 
   /*
-   * Open opens the StripeCheckout payment modal
+   * Open opens the StripeCheckout payment modal.
    * @public
    */
   open() {
@@ -75,11 +75,13 @@ const Stripe = Service.extend({
    * @public
    */
   close() {
-    if (this.get('isOpened')) {
-      this.getStripe().then((stripeHandler) => {
-        stripeHandler.close();
-      });
+    if (!this.get('isOpened')) {
+      return;
     }
+
+    this.getStripe().then((stripeHandler) => {
+      stripeHandler.close();
+    });
   },
 
   getStripeOption(key) {
@@ -100,8 +102,8 @@ const Stripe = Service.extend({
   },
 
   loadStripe() {
-    if (stripeScriptLoaded) {
-      return RSVP.resolve();
+    if (stripeScriptPromise) {
+      return stripeScriptPromise;
     }
 
     let script = document.createElement('script');
@@ -109,18 +111,50 @@ const Stripe = Service.extend({
     script.async = true;
     script.type = 'text/javascript';
 
-    stripeScriptLoaded = new RSVP.Promise((resolve, reject) => {
+    stripeScriptPromise = new RSVP.Promise((resolve, reject) => {
       script.onload = () => {
-        resolve(true);
+        resolve();
       };
       script.onerror = () => {
+        this._invokeAction('onStripeLoadError', ...arguments);
         reject();
       };
-
-      document.body.appendChild(script);
     });
+    document.body.appendChild(script);
 
-    return stripeScriptLoaded;
+    return stripeScriptPromise;
+  },
+
+  configureStripe() {
+    let self = this;
+
+    let key = this.getStripeOption('key');
+    if (Ember.isNone(key)) {
+      throw new Error('Your Stripe key must be set to use the `ember-cli-stripe` addon.');
+    }
+
+    return new RSVP.Promise((resolve /*, reject */) => {
+      this.loadStripe().then(() => {
+        let handler = StripeCheckout.configure({
+          key,
+          token(token) {
+            self._invokeAction('onToken', token);
+          },
+          opened() {
+            self.set('isOpened', true);
+            self._invokeAction('onOpened');
+          },
+          closed() {
+            self.set('isOpened', false);
+            self._invokeAction('onClosed');
+          }
+        });
+
+        this.set('_stripeHandler', handler);
+
+        resolve(handler);
+      });
+    });
   },
 
   getStripe() {
@@ -128,33 +162,7 @@ const Stripe = Service.extend({
       return RSVP.resolve(this.get('_stripeHandler'));
     }
 
-    let key = this.getStripeOption('key');
-    if (Ember.isNone(key)) {
-      throw new Error('Your Stripe key must be set to use the `ember-cli-stripe` addon.');
-    }
-
-    return this.loadStripe().then(() => {
-      let self = this;
-      const handler = StripeCheckout.configure({
-        key,
-        token(token) {
-          self._invokeAction('onToken', token);
-        },
-        opened() {
-          debugger;
-          self.set('isOpened', true);
-          self._invokeAction('onOpened');
-        },
-        closed() {
-          self.set('isOpened', false);
-          self._invokeAction('onClosed');
-        }
-      });
-
-      this.set('_stripeHandler', handler);
-
-      return handler;
-    });
+    return this.configureStripe();
   }
 });
 

@@ -1,6 +1,5 @@
 import Ember from 'ember';
 import layout from '../templates/components/stripe-checkout';
-import { invokeAction } from 'ember-invoke-action';
 
 /**
  * Stripe checkout component for accepting payments with
@@ -35,7 +34,7 @@ export default Ember.Component.extend({
   label: 'Pay with card',
 
   /**
-   * Kick up the modal if we're clicked
+   * Kick up the modal if we're clicked.
    */
   click(e) {
     e.preventDefault();
@@ -43,7 +42,7 @@ export default Ember.Component.extend({
   },
 
   /**
-   * Opens the Stripe modal for payment
+   * Opens the Stripe modal for payment.
    */
   openCheckout() {
     this.get('source').open();
@@ -63,15 +62,5 @@ export default Ember.Component.extend({
 
     this.closeCheckout();
     this.get('source').registerComponent(null);
-  },
-
-  actions: {
-    onOpened() {
-      invokeAction(this, 'onOpened');
-    },
-
-    onClosed() {
-      invokeAction(this, 'onClosed');
-    }
   }
 });
