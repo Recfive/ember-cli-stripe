@@ -103,7 +103,7 @@ export default Ember.Component.extend(StripeConfig, {
    * Source: https://stripe.com/docs/api#tokens
    */
   onToken: function(token) {
-    this.sendAction('action', token);
+    this.sendAction('action', token, this.get('actionData'));
   },
 
   hasBlock: Ember.computed.bool('template').readOnly(),
